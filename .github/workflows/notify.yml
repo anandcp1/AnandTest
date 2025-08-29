@@ -1,0 +1,35 @@
+name: India Top-10 NSE/BSE Email
+
+on:
+  schedule:
+    # GitHub Actions runs in UTC. These times = 09:15..15:15 IST (hourly at :45 UTC).
+    - cron: "45 3-9 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  run-and-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          TO_EMAILS: ${{ secrets.TO_EMAILS }}
+          TOP_N: "10"
+          ENFORCE_MARKET_HOURS: "true"
+          LOG_LEVEL: "INFO"
+        run: python scraper.py
